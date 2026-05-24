@@ -3,428 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tauros Barbería – Panel Admin</title>
+<title>Tauros Barbería – Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --black: #0a0a0a;
-    --dark: #111111;
-    --card: #1a1a1a;
-    --border: #2a2a2a;
-    --gold: #c9a84c;
-    --gold-light: #e8c96a;
-    --gold-dim: rgba(201,168,76,0.12);
-    --white: #f5f0e8;
-    --muted: #777;
-    --green: #4caf7d;
-    --red: #e05252;
-    --blue: #5b9cf6;
-    --radius: 10px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* LOGIN */
-  #loginWrap {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(ellipse at center, #1a1200 0%, #0a0a0a 70%);
-  }
-
-  .login-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
-  }
-
-  .login-icon { font-size: 48px; margin-bottom: 16px; }
-
-  .login-box h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--gold);
-    margin-bottom: 6px;
-  }
-
-  .login-box p { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
-
-  .login-box input {
-    width: 100%;
-    background: var(--dark);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    padding: 14px 16px;
-    outline: none;
-    margin-bottom: 12px;
-    transition: border-color 0.2s;
-  }
-
-  .login-box input:focus { border-color: var(--gold); }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 13px 24px;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-
-  .btn-gold { background: var(--gold); color: var(--black); width: 100%; justify-content: center; }
-  .btn-gold:hover { background: var(--gold-light); }
-  .btn-sm { padding: 8px 16px; font-size: 13px; }
-  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-green { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
-  .btn-red { background: rgba(224,82,82,0.12); color: var(--red); border: 1px solid rgba(224,82,82,0.25); }
-  .btn-danger { background: var(--red); color: white; }
-  .btn-danger:hover { opacity: 0.85; }
-
-  /* APP SHELL */
-  #appWrap { display: none; flex-direction: column; min-height: 100vh; }
-
-  /* TOPBAR */
-  topbar, .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--dark);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 28px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .topbar-left { display: flex; align-items: center; gap: 14px; }
-  .topbar-logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; }
-  .topbar-badge {
-    background: var(--gold-dim);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    font-size: 11px;
-    letter-spacing: 1px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    text-transform: uppercase;
-  }
-
-  /* NAV TABS */
-  .nav-tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--dark);
-    border-bottom: 1px solid var(--border);
-    padding: 0 28px;
-    overflow-x: auto;
-  }
-
-  .tab {
-    padding: 14px 20px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-
-  .tab:hover { color: var(--white); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-
-  /* CONTENT */
-  .content { flex: 1; padding: 32px 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
-
-  .panel { display: none; }
-  .panel.active { display: block; animation: fadeIn 0.3s ease; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* STATS ROW */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-  }
-
-  .stat-num {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 40px;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
-
-  /* SECTION HEADER */
-  .sec-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .sec-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    color: var(--gold);
-  }
-
-  /* TABLE */
-  .table-wrap {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow-x: auto;
-  }
-
-  table { width: 100%; border-collapse: collapse; }
-
-  th {
-    background: #111;
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-  }
-
-  td {
-    padding: 14px 16px;
-    font-size: 14px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: middle;
-  }
-
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 3px 10px;
-    border-radius: 999px;
-    letter-spacing: 0.5px;
-  }
-
-  .badge-green { background: rgba(76,175,125,0.15); color: var(--green); }
-  .badge-red { background: rgba(224,82,82,0.12); color: var(--red); }
-  .badge-blue { background: rgba(91,156,246,0.12); color: var(--blue); }
-  .badge-gray { background: rgba(255,255,255,0.06); color: var(--muted); }
-
-  /* FORM */
-  .form-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    max-width: 520px;
-    margin-bottom: 32px;
-  }
-
-  .form-card h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 2px;
-    color: var(--gold);
-    margin-bottom: 20px;
-  }
-
-  .field { margin-bottom: 16px; }
-
-  .field label {
-    display: block;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-
-  .field input, .field select, .field textarea {
-    width: 100%;
-    background: var(--dark);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    padding: 12px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .field input:focus, .field select:focus { border-color: var(--gold); }
-  .field select option { background: var(--dark); }
-
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  /* FILTROS */
-  .filter-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .filter-row input, .filter-row select {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    padding: 10px 14px;
-    outline: none;
-    flex: 1;
-    min-width: 140px;
-    max-width: 200px;
-    transition: border-color 0.2s;
-  }
-
-  .filter-row input:focus, .filter-row select:focus { border-color: var(--gold); }
-  .filter-row select option { background: var(--dark); }
-
-  /* CONFIG PANEL */
-  .config-mini {
-    background: #1a0f00;
-    border: 1px solid #3a2800;
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    font-size: 13px;
-  }
-
-  .config-mini h4 { color: var(--gold); margin-bottom: 8px; font-size: 14px; }
-  .config-mini .cfg-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-  .config-mini input { flex: 1; min-width: 180px; background: var(--dark); border: 1px solid var(--border); border-radius: 6px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 9px 12px; outline: none; }
-  .config-mini input:focus { border-color: var(--gold); }
-
-  /* SCHEDULE GRID */
-  .schedule-grid { display: grid; gap: 12px; }
-
-  .schedule-row {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .schedule-day {
-    font-weight: 600;
-    font-size: 14px;
-    width: 90px;
-    flex-shrink: 0;
-  }
-
-  .schedule-row input[type="time"] {
-    background: var(--dark);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    padding: 8px 10px;
-    outline: none;
-  }
-
-  .schedule-row input[type="time"]:focus { border-color: var(--gold); }
-
-  .toggle {
-    position: relative;
-    width: 40px; height: 22px;
-    flex-shrink: 0;
-  }
-
-  .toggle input { opacity: 0; width: 0; height: 0; }
-
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 22px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 16px; height: 16px;
-    left: 3px; top: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.2s;
-  }
-
-  .toggle input:checked + .toggle-slider { background: var(--gold); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-  }
-
-  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-
-  @media (max-width: 600px) {
-    .content { padding: 20px 16px; }
-    .nav-tabs { padding: 0 16px; }
-    .topbar { padding: 14px 16px; }
-    .field-row { grid-template-columns: 1fr; }
-  }
+  :root{--black:#0a0a0a;--dark:#111;--card:#1a1a1a;--border:#2a2a2a;--gold:#c9a84c;--gold-light:#e8c96a;--gold-dim:rgba(201,168,76,0.12);--white:#f5f0e8;--muted:#777;--green:#4caf7d;--red:#e05252;--blue:#5b9cf6;--radius:10px;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+  #loginWrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a1200 0%,#0a0a0a 70%);}
+  .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:380px;text-align:center;}
+  .login-icon{font-size:48px;margin-bottom:16px;}
+  .login-box h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold);margin-bottom:6px;}
+  .login-box p{color:var(--muted);font-size:13px;margin-bottom:28px;}
+  .login-box input{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;padding:14px 16px;outline:none;margin-bottom:12px;transition:border-color 0.2s;}
+  .login-box input:focus{border-color:var(--gold);}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+  .btn-gold{background:var(--gold);color:var(--black);width:100%;justify-content:center;}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-sm{padding:8px 16px;font-size:13px;width:auto;}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-green{background:rgba(76,175,125,0.15);color:var(--green);border:1px solid rgba(76,175,125,0.3);}
+  .btn-red{background:rgba(224,82,82,0.12);color:var(--red);border:1px solid rgba(224,82,82,0.25);}
+  #appWrap{display:none;flex-direction:column;min-height:100vh;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;background:var(--dark);border-bottom:1px solid var(--border);padding:16px 28px;position:sticky;top:0;z-index:100;}
+  .topbar-left{display:flex;align-items:center;gap:14px;}
+  .topbar-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;}
+  .topbar-badge{background:var(--gold-dim);border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:1px;padding:3px 10px;border-radius:999px;text-transform:uppercase;}
+  .nav-tabs{display:flex;gap:4px;background:var(--dark);border-bottom:1px solid var(--border);padding:0 28px;overflow-x:auto;}
+  .tab{padding:14px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;}
+  .tab:hover{color:var(--white);}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+  .content{flex:1;padding:32px 28px;max-width:1100px;margin:0 auto;width:100%;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadeIn 0.3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1;}
+  .stat-label{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:1px;text-transform:uppercase;}
+  .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+  .sec-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--gold);}
+  .table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#111;padding:12px 16px;text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+  td{padding:14px 16px;font-size:14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,0.02);}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;letter-spacing:0.5px;}
+  .badge-green{background:rgba(76,175,125,0.15);color:var(--green);}
+  .badge-red{background:rgba(224,82,82,0.12);color:var(--red);}
+  .badge-gray{background:rgba(255,255,255,0.06);color:var(--muted);}
+  .form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;max-width:520px;margin-bottom:32px;}
+  .form-card h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold);margin-bottom:20px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .field input,.field select{width:100%;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 14px;outline:none;transition:border-color 0.2s;}
+  .field input:focus,.field select:focus{border-color:var(--gold);}
+  .field select option{background:var(--dark);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .filter-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .filter-row input,.filter-row select{background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;outline:none;flex:1;min-width:140px;max-width:220px;}
+  .filter-row input:focus,.filter-row select:focus{border-color:var(--gold);}
+  .filter-row select option{background:var(--dark);}
+  .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+  .empty-icon{font-size:48px;margin-bottom:12px;}
+  .error-box{background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);border-radius:8px;padding:14px 18px;color:var(--red);font-size:13px;margin:12px 0;}
+  @media(max-width:600px){.content{padding:20px 16px;}.nav-tabs{padding:0 16px;}.topbar{padding:14px 16px;}.field-row{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
 <div id="loginWrap">
   <div class="login-box">
     <div class="login-icon">🔐</div>
@@ -435,8 +82,6 @@
     <p style="margin-top:16px;font-size:12px;color:#555">Contraseña por defecto: <strong style="color:var(--gold)">tauros2024</strong></p>
   </div>
 </div>
-
-<!-- APP -->
 <div id="appWrap">
   <div class="topbar">
     <div class="topbar-left">
@@ -446,68 +91,38 @@
     </div>
     <button class="btn btn-outline btn-sm" onclick="logout()">Salir →</button>
   </div>
-
   <div class="nav-tabs">
-    <div class="tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
-    <div class="tab" onclick="showTab('citas')">📅 Citas</div>
-    <div class="tab" onclick="showTab('barberos')">💈 Barberos</div>
-    <div class="tab" onclick="showTab('horarios')">🕐 Horarios</div>
-    <div class="tab" onclick="showTab('config')">⚙️ Configuración</div>
+    <div class="tab active" onclick="showTab('dashboard',this)">📊 Dashboard</div>
+    <div class="tab" onclick="showTab('citas',this)">📅 Citas</div>
+    <div class="tab" onclick="showTab('barberos',this)">💈 Barberos</div>
   </div>
-
   <div class="content">
 
     <!-- DASHBOARD -->
     <div class="panel active" id="panel-dashboard">
-      <div class="stats-row" id="statsRow">
-        <div class="stat-card">
-          <div class="stat-num" id="statTotal">–</div>
-          <div class="stat-label">Citas hoy</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statWeek">–</div>
-          <div class="stat-label">Esta semana</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statBarberos">–</div>
-          <div class="stat-label">Barberos activos</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statPending">–</div>
-          <div class="stat-label">Próximas</div>
-        </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="statHoy">–</div><div class="stat-label">Citas hoy</div></div>
+        <div class="stat-card"><div class="stat-num" id="statSemana">–</div><div class="stat-label">Esta semana</div></div>
+        <div class="stat-card"><div class="stat-num" id="statBarberos">–</div><div class="stat-label">Barberos activos</div></div>
+        <div class="stat-card"><div class="stat-num" id="statProximas">–</div><div class="stat-label">Próximas citas</div></div>
       </div>
-
-      <div class="sec-header">
-        <div class="sec-title">CITAS DE HOY</div>
-      </div>
-
-      <div class="table-wrap" id="todayTable">
-        <div class="empty-state"><div class="empty-icon">📅</div><p>Cargando citas...</p></div>
-      </div>
+      <div class="sec-header"><div class="sec-title">CITAS DE HOY</div></div>
+      <div class="table-wrap" id="dashTable"><div class="empty-state"><div class="empty-icon">📅</div><p>Cargando...</p></div></div>
     </div>
 
     <!-- CITAS -->
     <div class="panel" id="panel-citas">
-      <div class="sec-header">
-        <div class="sec-title">TODAS LAS CITAS</div>
-      </div>
-
+      <div class="sec-header"><div class="sec-title">TODAS LAS CITAS</div></div>
       <div class="filter-row">
         <input type="date" id="filterDate" onchange="loadCitas()" />
-        <select id="filterBarbero" onchange="loadCitas()">
-          <option value="">Todos los barberos</option>
-        </select>
+        <select id="filterBarbero" onchange="loadCitas()"><option value="">Todos los barberos</option></select>
         <select id="filterEstado" onchange="loadCitas()">
           <option value="">Todos los estados</option>
           <option value="confirmada">Confirmada</option>
           <option value="cancelada">Cancelada</option>
         </select>
       </div>
-
-      <div class="table-wrap" id="citasTable">
-        <div class="empty-state"><div class="empty-icon">📋</div><p>Selecciona filtros para ver citas</p></div>
-      </div>
+      <div class="table-wrap" id="citasTable"><div class="empty-state"><div class="empty-icon">📋</div><p>Usa los filtros para ver citas</p></div></div>
     </div>
 
     <!-- BARBEROS -->
@@ -515,491 +130,165 @@
       <div class="form-card">
         <h3>➕ REGISTRAR BARBERO</h3>
         <div class="field-row">
-          <div class="field">
-            <label>Nombre completo</label>
-            <input type="text" id="bNombre" placeholder="Ej: Carlos Ruiz" />
-          </div>
-          <div class="field">
-            <label>Silla asignada #</label>
-            <input type="number" id="bSilla" placeholder="1" min="1" max="10" />
-          </div>
+          <div class="field"><label>Nombre completo</label><input type="text" id="bNombre" placeholder="Ej: Carlos Ruiz" /></div>
+          <div class="field"><label>Silla asignada #</label><input type="number" id="bSilla" placeholder="1" min="1" max="20" /></div>
         </div>
-        <div class="field">
-          <label>Especialidad</label>
-          <input type="text" id="bEspec" placeholder="Ej: Fade & degradado" />
-        </div>
+        <div class="field"><label>Especialidad</label><input type="text" id="bEspec" placeholder="Ej: Fade & degradado" /></div>
+        <div id="barberoError"></div>
         <button class="btn btn-gold" onclick="registrarBarbero()">Registrar barbero</button>
       </div>
-
-      <div class="sec-header">
-        <div class="sec-title">BARBEROS REGISTRADOS</div>
-      </div>
-
-      <div class="table-wrap" id="barberosTable">
-        <div class="empty-state"><div class="empty-icon">💈</div><p>No hay barberos registrados</p></div>
-      </div>
-    </div>
-
-    <!-- HORARIOS -->
-    <div class="panel" id="panel-horarios">
-      <div class="sec-header">
-        <div class="sec-title">HORARIO DE OPERACIÓN</div>
-      </div>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">
-        Define los días y horarios de atención de la barbería. Estos horarios determinan los slots disponibles para los clientes.
-      </p>
-
-      <div class="schedule-grid" id="scheduleGrid"></div>
-
-      <div style="margin-top:20px">
-        <button class="btn btn-gold" onclick="guardarHorarios()">💾 Guardar horarios</button>
-      </div>
-    </div>
-
-    <!-- CONFIG -->
-    <div class="panel" id="panel-config">
-      <div class="sec-title" style="margin-bottom:20px">CONFIGURACIÓN DEL SISTEMA</div>
-
-      <div class="form-card">
-        <h3>🔗 SUPABASE</h3>
-        <div class="field">
-          <label>URL del proyecto</label>
-          <input type="text" id="cfgUrl" placeholder="https://xxxx.supabase.co" />
-        </div>
-        <div class="field">
-          <label>Anon Key (public)</label>
-          <input type="text" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIs..." />
-        </div>
-        <button class="btn btn-gold" onclick="saveConfig()">Guardar conexión</button>
-      </div>
-
-      <div class="form-card">
-        <h3>🔐 CONTRASEÑA ADMIN</h3>
-        <div class="field">
-          <label>Nueva contraseña</label>
-          <input type="password" id="newPw" placeholder="Mínimo 6 caracteres" />
-        </div>
-        <div class="field">
-          <label>Confirmar contraseña</label>
-          <input type="password" id="newPw2" placeholder="Repite la contraseña" />
-        </div>
-        <button class="btn btn-gold" onclick="cambiarPassword()">Cambiar contraseña</button>
-      </div>
-
-      <div class="form-card" style="border-color:#3a2800;background:#1a0f00">
-        <h3 style="color:#ffa000">📋 SQL PARA SUPABASE</h3>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">
-          Copia y ejecuta este SQL en tu proyecto de Supabase (SQL Editor) para crear las tablas necesarias:
-        </p>
-        <pre style="background:var(--dark);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;color:#aaa;overflow-x:auto;line-height:1.6">${getSQL()}</pre>
-        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="copySQL()">📋 Copiar SQL</button>
-      </div>
+      <div class="sec-header"><div class="sec-title">BARBEROS REGISTRADOS</div></div>
+      <div class="table-wrap" id="barberosTable"><div class="empty-state"><div class="empty-icon">💈</div><p>No hay barberos aún</p></div></div>
     </div>
 
   </div>
 </div>
-
 <script>
-// ─── AUTH ─────────────────────────────────────────────────
-let ADMIN_PW = localStorage.getItem('tb_admin_pw') || 'tauros2024';
-let SUPABASE_URL = localStorage.getItem('tb_url') || '';
-let SUPABASE_KEY = localStorage.getItem('tb_key') || '';
+  const SUPABASE_URL = 'https://wfpsicmmvvtppxewqgct.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcHNpY21tdnZ0cHB4ZXdxZ2N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NTUwMTUsImV4cCI6MjA5NDAzMTAxNX0.nSZ-qZJhPJmSLEk3rU4JNIzY8ie9HxZcl77gBwk7kx8';
+  let ADMIN_PW = localStorage.getItem('tb_admin_pw') || 'tauros2024';
 
-function login() {
-  const pw = document.getElementById('pwInput').value;
-  if (pw === ADMIN_PW) {
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('appWrap').style.display = 'flex';
-    initApp();
-  } else {
-    document.getElementById('pwInput').style.borderColor = 'var(--red)';
-    setTimeout(() => document.getElementById('pwInput').style.borderColor = '', 1500);
-  }
-}
-
-function logout() {
-  document.getElementById('loginWrap').style.display = 'flex';
-  document.getElementById('appWrap').style.display = 'none';
-  document.getElementById('pwInput').value = '';
-}
-
-// ─── SUPABASE ─────────────────────────────────────────────
-function sb(path, opts = {}) {
-  if (!SUPABASE_URL || !SUPABASE_KEY) return Promise.resolve([]);
-  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': opts.prefer || 'return=representation',
-      ...opts.headers
-    },
-    method: opts.method || 'GET',
-    body: opts.body ? JSON.stringify(opts.body) : undefined
-  }).then(r => r.json()).catch(() => []);
-}
-
-// ─── INIT ─────────────────────────────────────────────────
-function initApp() {
-  loadConfig();
-  loadDashboard();
-  loadBarberos();
-  buildSchedule();
-}
-
-function loadConfig() {
-  if (SUPABASE_URL) document.getElementById('cfgUrl').value = SUPABASE_URL;
-  if (SUPABASE_KEY) document.getElementById('cfgKey').value = SUPABASE_KEY;
-}
-
-function saveConfig() {
-  SUPABASE_URL = document.getElementById('cfgUrl').value.trim();
-  SUPABASE_KEY = document.getElementById('cfgKey').value.trim();
-  if (!SUPABASE_URL || !SUPABASE_KEY) return alert('Completa ambos campos');
-  localStorage.setItem('tb_url', SUPABASE_URL);
-  localStorage.setItem('tb_key', SUPABASE_KEY);
-  alert('✅ Configuración guardada. Recarga la página para aplicar.');
-}
-
-function cambiarPassword() {
-  const p1 = document.getElementById('newPw').value;
-  const p2 = document.getElementById('newPw2').value;
-  if (p1.length < 6) return alert('Mínimo 6 caracteres');
-  if (p1 !== p2) return alert('Las contraseñas no coinciden');
-  localStorage.setItem('tb_admin_pw', p1);
-  ADMIN_PW = p1;
-  alert('✅ Contraseña actualizada');
-  document.getElementById('newPw').value = '';
-  document.getElementById('newPw2').value = '';
-}
-
-// ─── TABS ─────────────────────────────────────────────────
-function showTab(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(`panel-${name}`).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (name === 'citas') { loadBarberosFilter(); }
-  if (name === 'barberos') { loadBarberos(); }
-}
-
-// ─── DASHBOARD ────────────────────────────────────────────
-async function loadDashboard() {
-  const today = new Date().toISOString().split('T')[0];
-
-  let citas = [], barberos = [];
-
-  if (SUPABASE_URL) {
-    [citas, barberos] = await Promise.all([
-      sb(`citas?select=*,barberos(nombre,silla_id)&order=fecha,hora`),
-      sb(`barberos?select=*&order=silla_id`)
-    ]);
-  } else {
-    // DEMO DATA
-    citas = getDemoData();
-    barberos = getDemoBarberos();
-  }
-
-  const hoy = citas.filter(c => c.fecha === today);
-  const proximas = citas.filter(c => c.fecha >= today && c.estado === 'confirmada');
-  const week = citas.filter(c => {
-    const d = new Date(c.fecha);
-    const now = new Date();
-    const diff = (d - now) / 86400000;
-    return diff >= 0 && diff < 7;
-  });
-  const bActivos = barberos.filter(b => b.disponible !== false);
-
-  document.getElementById('statTotal').textContent = hoy.length;
-  document.getElementById('statWeek').textContent = week.length;
-  document.getElementById('statBarberos').textContent = bActivos.length;
-  document.getElementById('statPending').textContent = proximas.length;
-
-  renderCitasTable(hoy, 'todayTable', true);
-}
-
-function renderCitasTable(citas, targetId, simple = false) {
-  const el = document.getElementById(targetId);
-  if (!citas || citas.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><p>No hay citas para mostrar</p></div>`;
-    return;
-  }
-
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Hora</th>
-          <th>Cliente</th>
-          <th>Silla</th>
-          <th>Barbero</th>
-          ${!simple ? '<th>Fecha</th>' : ''}
-          <th>Estado</th>
-          ${!simple ? '<th>Acciones</th>' : ''}
-        </tr>
-      </thead>
-      <tbody>
-        ${citas.map(c => `
-          <tr>
-            <td><strong>${(c.hora||'').substring(0,5)}</strong></td>
-            <td>${c.nombre_cliente || '–'} ${c.telefono_cliente ? `<br><span style="color:var(--muted);font-size:12px">${c.telefono_cliente}</span>` : ''}</td>
-            <td>Silla ${c.silla_id || (c.barberos?.silla_id || '–')}</td>
-            <td>${c.barberos?.nombre || c.barbero_nombre || '–'}</td>
-            ${!simple ? `<td>${formatDate(c.fecha)}</td>` : ''}
-            <td>
-              <span class="badge ${c.estado === 'confirmada' ? 'badge-green' : c.estado === 'cancelada' ? 'badge-red' : 'badge-blue'}">
-                ${c.estado || 'confirmada'}
-              </span>
-            </td>
-            ${!simple ? `
-              <td>
-                <button class="btn btn-red btn-sm" onclick="cancelarCita(${c.id})">Cancelar</button>
-              </td>
-            ` : ''}
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-}
-
-// ─── CITAS ────────────────────────────────────────────────
-async function loadBarberosFilter() {
-  let barberos = SUPABASE_URL ? await sb('barberos?select=id,nombre') : getDemoBarberos();
-  const sel = document.getElementById('filterBarbero');
-  sel.innerHTML = '<option value="">Todos los barberos</option>';
-  (barberos || []).forEach(b => {
-    sel.innerHTML += `<option value="${b.id}">${b.nombre}</option>`;
-  });
-}
-
-async function loadCitas() {
-  const fecha = document.getElementById('filterDate').value;
-  const barberoId = document.getElementById('filterBarbero').value;
-  const estado = document.getElementById('filterEstado').value;
-
-  let query = 'citas?select=*,barberos(nombre,silla_id)&order=fecha.desc,hora';
-  if (fecha) query += `&fecha=eq.${fecha}`;
-  if (barberoId) query += `&barbero_id=eq.${barberoId}`;
-  if (estado) query += `&estado=eq.${estado}`;
-
-  let citas = SUPABASE_URL ? await sb(query) : getDemoData();
-
-  // filtrar demo localmente
-  if (!SUPABASE_URL) {
-    if (fecha) citas = citas.filter(c => c.fecha === fecha);
-    if (estado) citas = citas.filter(c => c.estado === estado);
-  }
-
-  renderCitasTable(citas, 'citasTable', false);
-}
-
-async function cancelarCita(id) {
-  if (!confirm('¿Cancelar esta cita?')) return;
-  if (SUPABASE_URL) {
-    await sb(`citas?id=eq.${id}`, { method: 'PATCH', body: { estado: 'cancelada' } });
-  }
-  loadCitas();
-}
-
-// ─── BARBEROS ─────────────────────────────────────────────
-async function registrarBarbero() {
-  const nombre = document.getElementById('bNombre').value.trim();
-  const silla = parseInt(document.getElementById('bSilla').value);
-  const espec = document.getElementById('bEspec').value.trim();
-
-  if (!nombre || !silla) return alert('Nombre y silla son obligatorios');
-
-  if (SUPABASE_URL) {
-    const res = await sb('barberos', {
-      method: 'POST',
-      body: { nombre, silla_id: silla, especialidad: espec, disponible: true }
+  async function sb(path, opts={}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':opts.prefer||'return=representation'},
+      method:opts.method||'GET',
+      body:opts.body?JSON.stringify(opts.body):undefined
     });
-    if (res.error) return alert('Error: ' + res.error.message);
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.message||data.error||`Error ${res.status}`);
+    return data;
   }
 
-  document.getElementById('bNombre').value = '';
-  document.getElementById('bSilla').value = '';
-  document.getElementById('bEspec').value = '';
-  await loadBarberos();
-  alert('✅ Barbero registrado');
-}
-
-async function loadBarberos() {
-  let barberos = SUPABASE_URL ? await sb('barberos?select=*&order=silla_id') : getDemoBarberos();
-
-  const el = document.getElementById('barberosTable');
-  if (!barberos || barberos.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">💈</div><p>No hay barberos registrados</p></div>`;
-    return;
+  function login() {
+    if(document.getElementById('pwInput').value===ADMIN_PW){
+      document.getElementById('loginWrap').style.display='none';
+      document.getElementById('appWrap').style.display='flex';
+      loadDashboard(); loadBarberos(); loadBarberosFilter();
+    } else {
+      document.getElementById('pwInput').style.borderColor='var(--red)';
+      setTimeout(()=>document.getElementById('pwInput').style.borderColor='',1500);
+    }
   }
 
-  el.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Silla</th>
-          <th>Nombre</th>
-          <th>Especialidad</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${barberos.map(b => `
-          <tr>
-            <td><strong>💈 ${b.silla_id}</strong></td>
-            <td>${b.nombre}</td>
-            <td style="color:var(--muted)">${b.especialidad || '–'}</td>
-            <td>
-              <span class="badge ${b.disponible !== false ? 'badge-green' : 'badge-red'}">
-                ${b.disponible !== false ? 'Disponible' : 'No disponible'}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-sm ${b.disponible !== false ? 'btn-red' : 'btn-green'}"
-                onclick="toggleBarbero(${b.id}, ${b.disponible !== false})">
-                ${b.disponible !== false ? 'Desactivar' : 'Activar'}
-              </button>
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  `;
-}
+  function logout(){document.getElementById('loginWrap').style.display='flex';document.getElementById('appWrap').style.display='none';document.getElementById('pwInput').value='';}
 
-async function toggleBarbero(id, current) {
-  if (SUPABASE_URL) {
-    await sb(`barberos?id=eq.${id}`, { method: 'PATCH', body: { disponible: !current } });
+  function showTab(name,el) {
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById(`panel-${name}`).classList.add('active');
+    el.classList.add('active');
   }
-  loadBarberos();
-}
 
-// ─── HORARIOS ─────────────────────────────────────────────
-const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-const DEFAULT_HOURS = {
-  Lunes:     { open: true,  start: '09:00', end: '18:00' },
-  Martes:    { open: true,  start: '09:00', end: '18:00' },
-  Miércoles: { open: true,  start: '09:00', end: '18:00' },
-  Jueves:    { open: true,  start: '09:00', end: '18:00' },
-  Viernes:   { open: true,  start: '09:00', end: '19:00' },
-  Sábado:    { open: true,  start: '08:00', end: '17:00' },
-  Domingo:   { open: false, start: '10:00', end: '15:00' },
-};
+  async function loadDashboard() {
+    const today = new Date().toISOString().split('T')[0];
+    const weekEnd = new Date(Date.now()+7*86400000).toISOString().split('T')[0];
+    try {
+      const [citas, barberos] = await Promise.all([
+        sb(`citas?select=*,barberos(nombre,silla_id)&order=fecha,hora`),
+        sb(`barberos?select=*`)
+      ]);
+      const hoy = citas.filter(c=>c.fecha===today);
+      const semana = citas.filter(c=>c.fecha>=today&&c.fecha<=weekEnd);
+      const proximas = citas.filter(c=>c.fecha>=today&&c.estado==='confirmada');
+      const activos = barberos.filter(b=>b.disponible!==false);
+      document.getElementById('statHoy').textContent=hoy.length;
+      document.getElementById('statSemana').textContent=semana.length;
+      document.getElementById('statBarberos').textContent=activos.length;
+      document.getElementById('statProximas').textContent=proximas.length;
+      renderTable(hoy,'dashTable',true);
+    } catch(e) {
+      document.getElementById('dashTable').innerHTML=`<div class="error-box" style="margin:16px">❌ Error: ${e.message}</div>`;
+    }
+  }
 
-function buildSchedule() {
-  const saved = JSON.parse(localStorage.getItem('tb_schedule') || '{}');
-  const grid = document.getElementById('scheduleGrid');
+  function renderTable(citas, targetId, simple=false) {
+    const el=document.getElementById(targetId);
+    if(!citas||!citas.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><p>No hay citas para mostrar</p></div>';return;}
+    el.innerHTML=`<table><thead><tr>
+      <th>Hora</th><th>Cliente</th><th>Silla</th><th>Barbero</th>
+      ${!simple?'<th>Fecha</th>':''}
+      <th>Estado</th>
+      ${!simple?'<th>Acciones</th>':''}
+    </tr></thead><tbody>
+    ${citas.map(c=>`<tr>
+      <td><strong>${(c.hora||'').substring(0,5)}</strong></td>
+      <td>${c.nombre_cliente||'–'}${c.telefono_cliente?`<br><span style="color:var(--muted);font-size:12px">${c.telefono_cliente}</span>`:''}</td>
+      <td>Silla ${c.silla_id||'–'}</td>
+      <td>${c.barberos?.nombre||'–'}</td>
+      ${!simple?`<td>${formatDate(c.fecha)}</td>`:''}
+      <td><span class="badge ${c.estado==='confirmada'?'badge-green':'badge-red'}">${c.estado||'confirmada'}</span></td>
+      ${!simple?`<td><button class="btn btn-red btn-sm" onclick="cancelarCita(${c.id})">Cancelar</button></td>`:''}
+    </tr>`).join('')}
+    </tbody></table>`;
+  }
 
-  grid.innerHTML = DAYS.map(d => {
-    const h = saved[d] || DEFAULT_HOURS[d];
-    return `
-      <div class="schedule-row">
-        <span class="schedule-day">${d}</span>
-        <label class="toggle">
-          <input type="checkbox" id="tog-${d}" ${h.open ? 'checked' : ''} />
-          <span class="toggle-slider"></span>
-        </label>
-        <span style="font-size:13px;color:var(--muted);width:60px">${h.open ? 'Abierto' : 'Cerrado'}</span>
-        <input type="time" id="start-${d}" value="${h.start}" />
-        <span style="color:var(--muted);font-size:13px">hasta</span>
-        <input type="time" id="end-${d}" value="${h.end}" />
-      </div>
-    `;
-  }).join('');
+  async function loadBarberosFilter() {
+    try {
+      const b=await sb('barberos?select=id,nombre&order=silla_id');
+      const sel=document.getElementById('filterBarbero');
+      sel.innerHTML='<option value="">Todos los barberos</option>';
+      b.forEach(x=>sel.innerHTML+=`<option value="${x.id}">${x.nombre}</option>`);
+    } catch(e){}
+  }
 
-  DAYS.forEach(d => {
-    document.getElementById(`tog-${d}`).addEventListener('change', function() {
-      const row = this.closest('.schedule-row');
-      row.querySelector('span:nth-child(3)').textContent = this.checked ? 'Abierto' : 'Cerrado';
-    });
-  });
-}
+  async function loadCitas() {
+    let q='citas?select=*,barberos(nombre,silla_id)&order=fecha.desc,hora';
+    const fecha=document.getElementById('filterDate').value;
+    const barbero=document.getElementById('filterBarbero').value;
+    const estado=document.getElementById('filterEstado').value;
+    if(fecha) q+=`&fecha=eq.${fecha}`;
+    if(barbero) q+=`&barbero_id=eq.${barbero}`;
+    if(estado) q+=`&estado=eq.${estado}`;
+    try { renderTable(await sb(q),'citasTable',false); }
+    catch(e){ document.getElementById('citasTable').innerHTML=`<div class="error-box" style="margin:16px">❌ Error: ${e.message}</div>`; }
+  }
 
-function guardarHorarios() {
-  const sched = {};
-  DAYS.forEach(d => {
-    sched[d] = {
-      open: document.getElementById(`tog-${d}`).checked,
-      start: document.getElementById(`start-${d}`).value,
-      end: document.getElementById(`end-${d}`).value
-    };
-  });
-  localStorage.setItem('tb_schedule', JSON.stringify(sched));
-  alert('✅ Horarios guardados');
-}
+  async function cancelarCita(id) {
+    if(!confirm('¿Cancelar esta cita?'))return;
+    try { await sb(`citas?id=eq.${id}`,{method:'PATCH',body:{estado:'cancelada'},prefer:'return=minimal'}); loadCitas(); loadDashboard(); }
+    catch(e){ alert('Error: '+e.message); }
+  }
 
-// ─── SQL ──────────────────────────────────────────────────
-function getSQL() {
-  return `-- TABLA: barberos
-CREATE TABLE barberos (
-  id SERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  silla_id INTEGER NOT NULL,
-  especialidad TEXT,
-  disponible BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+  async function registrarBarbero() {
+    const nombre=document.getElementById('bNombre').value.trim();
+    const silla=parseInt(document.getElementById('bSilla').value);
+    const espec=document.getElementById('bEspec').value.trim();
+    if(!nombre||!silla){document.getElementById('barberoError').innerHTML='<div class="error-box">Nombre y número de silla son obligatorios</div>';return;}
+    try {
+      await sb('barberos',{method:'POST',body:{nombre,silla_id:silla,especialidad:espec||null,disponible:true}});
+      document.getElementById('bNombre').value='';
+      document.getElementById('bSilla').value='';
+      document.getElementById('bEspec').value='';
+      document.getElementById('barberoError').innerHTML='';
+      await loadBarberos();
+      await loadBarberosFilter();
+      await loadDashboard();
+    } catch(e){ document.getElementById('barberoError').innerHTML=`<div class="error-box">❌ Error: ${e.message}</div>`; }
+  }
 
--- TABLA: citas
-CREATE TABLE citas (
-  id SERIAL PRIMARY KEY,
-  silla_id INTEGER NOT NULL,
-  barbero_id INTEGER REFERENCES barberos(id),
-  nombre_cliente TEXT NOT NULL,
-  telefono_cliente TEXT,
-  fecha DATE NOT NULL,
-  hora TIME NOT NULL,
-  estado TEXT DEFAULT 'confirmada',
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+  async function loadBarberos() {
+    try {
+      const b=await sb('barberos?select=*&order=silla_id');
+      const el=document.getElementById('barberosTable');
+      if(!b.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">💈</div><p>No hay barberos registrados</p></div>';return;}
+      el.innerHTML=`<table><thead><tr><th>Silla</th><th>Nombre</th><th>Especialidad</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+      ${b.map(x=>`<tr>
+        <td><strong>💈 ${x.silla_id}</strong></td>
+        <td>${x.nombre}</td>
+        <td style="color:var(--muted)">${x.especialidad||'–'}</td>
+        <td><span class="badge ${x.disponible!==false?'badge-green':'badge-red'}">${x.disponible!==false?'Disponible':'No disponible'}</span></td>
+        <td><button class="btn btn-sm ${x.disponible!==false?'btn-red':'btn-green'}" onclick="toggleBarbero(${x.id},${x.disponible!==false})">${x.disponible!==false?'Desactivar':'Activar'}</button></td>
+      </tr>`).join('')}
+      </tbody></table>`;
+    } catch(e){ document.getElementById('barberosTable').innerHTML=`<div class="error-box" style="margin:16px">❌ Error: ${e.message}</div>`; }
+  }
 
--- ÍNDICES
-CREATE INDEX idx_citas_fecha ON citas(fecha);
-CREATE INDEX idx_citas_silla ON citas(silla_id);
+  async function toggleBarbero(id,current) {
+    try { await sb(`barberos?id=eq.${id}`,{method:'PATCH',body:{disponible:!current},prefer:'return=minimal'}); loadBarberos(); loadDashboard(); }
+    catch(e){ alert('Error: '+e.message); }
+  }
 
--- ROW LEVEL SECURITY (permitir lectura pública)
-ALTER TABLE barberos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE citas ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "public_read_barberos" ON barberos FOR SELECT USING (true);
-CREATE POLICY "public_insert_citas" ON citas FOR INSERT WITH CHECK (true);
-CREATE POLICY "public_read_citas" ON citas FOR SELECT USING (true);
-CREATE POLICY "public_update_citas" ON citas FOR UPDATE USING (true);`;
-}
-
-function copySQL() {
-  navigator.clipboard.writeText(getSQL()).then(() => alert('✅ SQL copiado al portapapeles'));
-}
-
-// ─── DEMO DATA ────────────────────────────────────────────
-function getDemoBarberos() {
-  return [
-    { id: 1, silla_id: 1, nombre: 'Carlos Ruiz', especialidad: 'Corte clásico', disponible: true },
-    { id: 2, silla_id: 2, nombre: 'Andrés Mora', especialidad: 'Fade & degradado', disponible: true },
-    { id: 3, silla_id: 3, nombre: 'Sebastián Gil', especialidad: 'Barba & diseño', disponible: true },
-    { id: 4, silla_id: 4, nombre: 'Miguel Torres', especialidad: 'Corte moderno', disponible: false },
-  ];
-}
-
-function getDemoData() {
-  const today = new Date().toISOString().split('T')[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-  return [
-    { id: 1, silla_id: 1, barbero_nombre: 'Carlos Ruiz', barberos: { nombre: 'Carlos Ruiz', silla_id: 1 }, nombre_cliente: 'Juan Pérez', telefono_cliente: '300 123 4567', fecha: today, hora: '09:00:00', estado: 'confirmada' },
-    { id: 2, silla_id: 2, barbero_nombre: 'Andrés Mora', barberos: { nombre: 'Andrés Mora', silla_id: 2 }, nombre_cliente: 'Carlos Gómez', telefono_cliente: null, fecha: today, hora: '10:00:00', estado: 'confirmada' },
-    { id: 3, silla_id: 1, barbero_nombre: 'Carlos Ruiz', barberos: { nombre: 'Carlos Ruiz', silla_id: 1 }, nombre_cliente: 'Luis Torres', telefono_cliente: '310 987 6543', fecha: today, hora: '11:30:00', estado: 'confirmada' },
-    { id: 4, silla_id: 3, barbero_nombre: 'Sebastián Gil', barberos: { nombre: 'Sebastián Gil', silla_id: 3 }, nombre_cliente: 'Mario Díaz', telefono_cliente: null, fecha: tomorrow, hora: '09:00:00', estado: 'confirmada' },
-    { id: 5, silla_id: 2, barbero_nombre: 'Andrés Mora', barberos: { nombre: 'Andrés Mora', silla_id: 2 }, nombre_cliente: 'Pedro Ruiz', telefono_cliente: '320 456 7890', fecha: tomorrow, hora: '14:00:00', estado: 'confirmada' },
-  ];
-}
-
-// ─── UTIL ─────────────────────────────────────────────────
-function formatDate(d) {
-  if (!d) return '–';
-  return new Date(d + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+  function formatDate(d){if(!d)return'–';return new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});}
 </script>
 </body>
 </html>
