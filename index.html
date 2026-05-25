@@ -306,11 +306,16 @@
     return slots;
   }
 
-  function renderSlots(all,occupied) {
-    document.getElementById('slotsGrid').innerHTML=all.map(s=>`
-      <div class="slot ${occupied.includes(s)?'taken':''}" onclick="${occupied.includes(s)?'':``selectSlot('${s}',this)``}">
-        ${s}
-      </div>`).join('');
+  function renderSlots(all, occupied) {
+    let html = '';
+    for (let i = 0; i < all.length; i++) {
+      const s = all[i];
+      const taken = occupied.includes(s);
+      const cls = taken ? 'slot taken' : 'slot';
+      const fn = taken ? '' : "selectSlot('" + s + "',this)";
+      html += '<div class="' + cls + '" onclick="' + fn + '">' + s + '</div>';
+    }
+    document.getElementById('slotsGrid').innerHTML = html;
   }
 
   function selectSlot(slot,el) {
