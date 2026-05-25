@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tauros Barbería – Agendar Cita</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a; --dark: #111111; --card: #1a1a1a; --border: #2a2a2a;
+    --gold: #c9a84c; --gold-light: #e8c96a; --gold-dim: rgba(201,168,76,0.15);
+    --white: #f5f0e8; --muted: #888; --green: #4caf7d; --red: #e05252; --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; min-height:100vh; }
+  header { background:var(--dark); border-bottom:1px solid var(--border); padding:20px 32px; display:flex; align-items:center; gap:16px; position:sticky; top:0; z-index:100; }
+  .logo-icon { width:44px; height:44px; background:var(--gold); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+  .logo-text { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:2px; }
+  .logo-sub { font-size:11px; color:var(--muted); letter-spacing:3px; text-transform:uppercase; margin-top:-4px; }
+  .hero { background:linear-gradient(135deg,#111 0%,#1a1400 100%); padding:60px 32px 48px; text-align:center; border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+  .hero::before { content:'TAUROS'; position:absolute; font-family:'Bebas Neue',sans-serif; font-size:200px; color:rgba(201,168,76,0.04); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; white-space:nowrap; }
+  .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(36px,6vw,64px); letter-spacing:4px; position:relative; }
+  .hero h1 span { color:var(--gold); }
+  .hero p { color:var(--muted); margin-top:10px; font-size:15px; letter-spacing:1px; position:relative; }
+  .steps-bar { display:flex; align-items:center; justify-content:center; padding:28px 32px; background:var(--dark); border-bottom:1px solid var(--border); flex-wrap:wrap; gap:8px; }
+  .step { display:flex; align-items:center; gap:10px; padding:8px 20px; border-radius:999px; font-size:13px; font-weight:500; color:var(--muted); border:1px solid transparent; transition:all 0.3s; }
+  .step.active { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+  .step.done { color:var(--green); }
+  .step-num { width:24px; height:24px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; flex-shrink:0; }
+  .step.active .step-num { background:var(--gold); color:var(--black); }
+  .step.done .step-num { background:var(--green); color:white; }
+  main { max-width:900px; margin:0 auto; padding:40px 24px 80px; }
+  .section { display:none; }
+  .section.active { display:block; animation:fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .section-title { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:3px; color:var(--gold); margin-bottom:8px; }
+  .section-sub { color:var(--muted); font-size:14px; margin-bottom:28px; }
+  .chairs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; }
+  .chair-card { background:var(--card); border:2px solid var(--border); border-radius:var(--radius); padding:24px 20px; cursor:pointer; transition:all 0.25s; position:relative; overflow:hidden; }
+  .chair-card:hover { border-color:var(--gold); transform:translateY(-3px); }
+  .chair-card.selected { border-color:var(--gold); background:rgba(201,168,76,0.1); }
+  .chair-card.occupied { opacity:0.4; cursor:not-allowed; pointer-events:none; }
+  .chair-icon { font-size:36px; margin-bottom:12px; }
+  .chair-num { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:2px; }
+  .chair-barber { font-size:13px; color:var(--muted); margin-top:4px; }
+  .chair-status { display:inline-block; margin-top:10px; font-size:11px; font-weight:600; letter-spacing:1px; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
+  .status-free { background:rgba(76,175,125,0.15); color:var(--green); }
+  .status-busy { background:rgba(224,82,82,0.15); color:var(--red); }
+  .date-picker-wrap { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; max-width:420px; }
+  .date-picker-wrap label { display:block; font-size:13px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  input[type="date"] { width:100%; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:var(--white); font-family:'DM Sans',sans-serif; font-size:16px; padding:14px 16px; outline:none; transition:border-color 0.2s; }
+  input[type="date"]:focus { border-color:var(--gold); }
+  input[type="text"], input[type="tel"] { width:100%; background:var(--dark); border:1px solid var(--border); border-radius:8px; color:var(--white); font-family:'DM Sans',sans-serif; font-size:15px; padding:14px 16px; outline:none; transition:border-color 0.2s; margin-bottom:16px; }
+  input[type="text"]:focus, input[type="tel"]:focus { border-color:var(--gold); }
+  .slots-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; margin-top:20px; }
+  .slot { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 8px; text-align:center; cursor:pointer; transition:all 0.2s; font-size:14px; font-weight:500; }
+  .slot:hover:not(.taken) { border-color:var(--gold); color:var(--gold); }
+  .slot.selected-slot { background:var(--gold); color:var(--black); font-weight:700; border-color:var(--gold); }
+  .slot.taken { background:rgba(224,82,82,0.08); color:var(--red); border-color:rgba(224,82,82,0.2); cursor:not-allowed; text-decoration:line-through; opacity:0.5; }
+  .summary-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; max-width:500px; }
+  .summary-header { background:var(--gold); padding:18px 24px; font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:2px; color:var(--black); }
+  .summary-body { padding:24px; }
+  .summary-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); font-size:14px; }
+  .summary-row:last-child { border-bottom:none; }
+  .summary-label { color:var(--muted); }
+  .summary-val { font-weight:600; }
+  .confirm-box { text-align:center; padding:60px 24px; max-width:500px; margin:0 auto; }
+  .confirm-icon { font-size:72px; margin-bottom:20px; animation:pop 0.5s ease; }
+  @keyframes pop { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  .confirm-box h2 { font-family:'Bebas Neue',sans-serif; font-size:36px; letter-spacing:3px; color:var(--gold); margin-bottom:12px; }
+  .confirm-box p { color:var(--muted); font-size:15px; line-height:1.7; }
+  .confirm-detail { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin:24px 0; text-align:left; }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:14px 28px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; letter-spacing:0.5px; cursor:pointer; border:none; transition:all 0.2s; }
+  .btn-gold { background:var(--gold); color:var(--black); }
+  .btn-gold:hover { background:var(--gold-light); transform:translateY(-1px); }
+  .btn-gold:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .btn-outline { background:transparent; color:var(--muted); border:1px solid var(--border); }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+  .btn-row { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+  .field-label { display:block; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .field-group { margin-bottom:4px; }
+  .selected-chip { display:inline-flex; align-items:center; gap:8px; background:var(--gold-dim); border:1px solid var(--gold); border-radius:999px; padding:6px 14px; font-size:13px; color:var(--gold); margin-bottom:20px; }
+  .loader { display:flex; gap:6px; padding:20px 0; }
+  .loader span { width:8px; height:8px; background:var(--gold); border-radius:50%; animation:bounce 0.8s infinite; }
+  .loader span:nth-child(2) { animation-delay:0.15s; }
+  .loader span:nth-child(3) { animation-delay:0.3s; }
+  @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:0.5} 40%{transform:translateY(-10px);opacity:1} }
+  .error-box { background:rgba(224,82,82,0.1); border:1px solid rgba(224,82,82,0.3); border-radius:8px; padding:14px 18px; color:var(--red); font-size:13px; margin:12px 0; }
+  @media(max-width:600px){ header{padding:16px 20px} main{padding:28px 16px 60px} .hero{padding:40px 20px 32px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-icon">✂️</div>
+  <div>
+    <div class="logo-text">TAUROS BARBERÍA</div>
+    <div class="logo-sub">Sistema de Agendamiento</div>
+  </div>
+</header>
+<div class="hero">
+  <h1>AGENDA TU <span>CITA</span></h1>
+  <p>Selecciona silla · Elige fecha y hora · Confirma tu reserva</p>
+</div>
+<div class="steps-bar">
+  <div class="step active" id="step1"><div class="step-num">1</div> Silla</div>
+  <div class="step" id="step2"><div class="step-num">2</div> Fecha</div>
+  <div class="step" id="step3"><div class="step-num">3</div> Horario</div>
+  <div class="step" id="step4"><div class="step-num">4</div> Confirmar</div>
+</div>
+<main>
+  <!-- SECCIÓN 1: SILLAS -->
+  <div class="section active" id="sec1">
+    <div class="section-title">ELIGE TU SILLA</div>
+    <div class="section-sub">Cada silla tiene un barbero asignado. Selecciona la de tu preferencia.</div>
+    <div class="chairs-grid" id="chairsGrid"><div class="loader"><span></span><span></span><span></span></div></div>
+    <div id="chairError"></div>
+    <div class="btn-row">
+      <button class="btn btn-gold" id="btnToDate" onclick="goToDate()" disabled>Continuar →</button>
+    </div>
+  </div>
+  <!-- SECCIÓN 2: FECHA -->
+  <div class="section" id="sec2">
+    <div class="selected-chip">✂️ <span id="chipChair"></span></div>
+    <div class="section-title">ELIGE LA FECHA</div>
+    <div class="section-sub">Solo días de lunes a sábado dentro del horario de operación.</div>
+    <div class="date-picker-wrap">
+      <label>Selecciona un día</label>
+      <input type="date" id="dateInput" onchange="onDateChange()" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goBack(1)">← Volver</button>
+      <button class="btn btn-gold" id="btnToSlots" onclick="goToSlots()" disabled>Ver horarios →</button>
+    </div>
+  </div>
+  <!-- SECCIÓN 3: SLOTS -->
+  <div class="section" id="sec3">
+    <div class="selected-chip">✂️ <span id="chipChair2"></span> · 📅 <span id="chipDate"></span></div>
+    <div class="section-title">ELIGE EL HORARIO</div>
+    <div class="section-sub">🟢 Disponible &nbsp;·&nbsp; 🔴 Ocupado</div>
+    <div class="slots-grid" id="slotsGrid"><div class="loader"><span></span><span></span><span></span></div></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goBack(2)">← Volver</button>
+      <button class="btn btn-gold" id="btnToConfirm" onclick="goToConfirm()" disabled>Continuar →</button>
+    </div>
+  </div>
+  <!-- SECCIÓN 4: CONFIRMAR -->
+  <div class="section" id="sec4">
+    <div class="section-title">CONFIRMA TU RESERVA</div>
+    <div class="section-sub">Revisa los datos e ingresa tu nombre para completar la cita.</div>
+    <div class="summary-card">
+      <div class="summary-header">📋 RESUMEN DE CITA</div>
+      <div class="summary-body">
+        <div class="summary-row"><span class="summary-label">Silla</span><span class="summary-val" id="sumChair">–</span></div>
+        <div class="summary-row"><span class="summary-label">Barbero</span><span class="summary-val" id="sumBarber">–</span></div>
+        <div class="summary-row"><span class="summary-label">Fecha</span><span class="summary-val" id="sumDate">–</span></div>
+        <div class="summary-row"><span class="summary-label">Hora</span><span class="summary-val" id="sumSlot">–</span></div>
+      </div>
+    </div>
+    <div style="margin-top:28px;max-width:420px;">
+      <div class="field-group"><label class="field-label">Tu nombre</label><input type="text" id="clientName" placeholder="Ej: Juan Pérez" /></div>
+      <div class="field-group"><label class="field-label">Teléfono (opcional)</label><input type="tel" id="clientPhone" placeholder="Ej: 300 123 4567" /></div>
+    </div>
+    <div id="confirmError"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline" onclick="goBack(3)">← Volver</button>
+      <button class="btn btn-gold" id="btnConfirmar" onclick="confirmarCita()">✅ Confirmar cita</button>
+    </div>
+  </div>
+  <!-- SECCIÓN 5: ÉXITO -->
+  <div class="section" id="sec5">
+    <div class="confirm-box">
+      <div class="confirm-icon">✅</div>
+      <h2>¡CITA CONFIRMADA!</h2>
+      <p>Tu reserva fue registrada exitosamente. Guarda este comprobante.</p>
+      <div class="confirm-detail">
+        <div class="summary-row"><span class="summary-label">Silla</span><span class="summary-val" id="okChair">–</span></div>
+        <div class="summary-row"><span class="summary-label">Barbero</span><span class="summary-val" id="okBarber">–</span></div>
+        <div class="summary-row"><span class="summary-label">Fecha</span><span class="summary-val" id="okDate">–</span></div>
+        <div class="summary-row"><span class="summary-label">Hora</span><span class="summary-val" id="okSlot">–</span></div>
+        <div class="summary-row" style="border:none"><span class="summary-label">Cliente</span><span class="summary-val" id="okClient">–</span></div>
+      </div>
+      <button class="btn btn-gold" onclick="resetApp()" style="margin:0 auto">➕ Agendar otra cita</button>
+    </div>
+  </div>
+</main>
+<script>
+  const SUPABASE_URL = 'https://wfpsicmmvvtppxewqgct.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcHNpY21tdnZ0cHB4ZXdxZ2N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NTUwMTUsImV4cCI6MjA5NDAzMTAxNX0.nSZ-qZJhPJmSLEk3rU4JNIzY8ie9HxZcl77gBwk7kx8';
+
+  let state = { chair:null, barber:null, barberId:null, date:null, slot:null };
+
+  async function sb(path, opts={}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': opts.prefer || 'return=representation'
+        },
+        method: opts.method || 'GET',
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error || `Error ${res.status}`);
+      return data;
+    } catch(e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') throw new Error('Tiempo de espera agotado. Verifica tu conexión a internet.');
+      throw e;
+    }
+  }
+
+  window.onload = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('dateInput').min = today;
+    loadChairs();
+  };
+
+  async function loadChairs() {
+    const grid = document.getElementById('chairsGrid');
+    grid.innerHTML = '<div class="loader"><span></span><span></span><span></span></div>';
+    try {
+      const barberos = await sb('barberos?select=*&order=silla_id');
+      renderChairs(barberos);
+    } catch(e) {
+      grid.innerHTML = '';
+      document.getElementById('chairError').innerHTML = `
+        <div class="error-box">
+          ❌ Error al cargar barberos: ${e.message}<br>
+          <small style="opacity:0.7">Verifica tu conexión y las políticas RLS en Supabase.</small><br>
+          <button onclick="loadChairs()" style="margin-top:10px;padding:8px 16px;background:var(--gold);color:var(--black);border:none;border-radius:6px;cursor:pointer;font-weight:600">🔄 Reintentar</button>
+        </div>`;
+    }
+  }
+
+  function renderChairs(barberos) {
+    const grid = document.getElementById('chairsGrid');
+    if (!barberos.length) {
+      grid.innerHTML = `<div class="error-box" style="max-width:500px">
+        ⚠️ No hay barberos registrados aún. Agrégalos desde el panel admin.<br><br>
+        <strong>¿Ya los agregaste y no aparecen?</strong> Puede ser un problema de permisos en Supabase. Ve a tu proyecto en supabase.com → SQL Editor y ejecuta:<br>
+        <code style="display:block;margin-top:8px;padding:8px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:11px">
+          CREATE POLICY "Lectura pública barberos" ON barberos FOR SELECT TO anon USING (true);<br>
+          CREATE POLICY "Lectura pública citas" ON citas FOR SELECT TO anon USING (true);<br>
+          CREATE POLICY "Insertar citas" ON citas FOR INSERT TO anon WITH CHECK (true);
+        </code>
+      </div>`;
+      return;
+    }
+    grid.innerHTML = barberos.map(b => `
+      <div class="chair-card ${b.disponible === false ? 'occupied' : ''}" onclick="${b.disponible === false ? '' : `selectChair(${b.silla_id},'${b.nombre.replace(/'/g,"\\'")}',${b.id},this)`}">
+        <div class="chair-icon">💈</div>
+        <div class="chair-num">SILLA ${b.silla_id}</div>
+        <div class="chair-barber">${b.nombre}</div>
+        <div class="chair-barber" style="color:#555;font-size:12px">${b.especialidad||''}</div>
+        <div class="chair-status ${b.disponible !== false ? 'status-free':'status-busy'}">${b.disponible !== false ? 'Disponible':'No disponible'}</div>
+      </div>`).join('');
+  }
+
+  function selectChair(sillaId, barberName, barberId, el) {
+    document.querySelectorAll('.chair-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.chair=sillaId; state.barber=barberName; state.barberId=barberId;
+    document.getElementById('btnToDate').disabled=false;
+  }
+
+  function goToDate() {
+    document.getElementById('chipChair').textContent=`Silla ${state.chair} – ${state.barber}`;
+    showSection(2);
+  }
+
+  function onDateChange() {
+    const val = document.getElementById('dateInput').value;
+    const day = new Date(val+'T12:00:00').getDay();
+    if (day===0) { alert('La barbería está cerrada los domingos.'); document.getElementById('dateInput').value=''; document.getElementById('btnToSlots').disabled=true; return; }
+    state.date=val;
+    document.getElementById('btnToSlots').disabled=false;
+  }
+
+  async function goToSlots() {
+    document.getElementById('chipChair2').textContent=`Silla ${state.chair} – ${state.barber}`;
+    const d = new Date(state.date+'T12:00:00');
+    document.getElementById('chipDate').textContent=d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+    showSection(3);
+    document.getElementById('slotsGrid').innerHTML='<div class="loader"><span></span><span></span><span></span></div>';
+    const all = generateSlots('09:00','18:00',30);
+    let occupied=[];
+    try {
+      const citas = await sb(`citas?select=hora&silla_id=eq.${state.chair}&fecha=eq.${state.date}&estado=eq.confirmada`);
+      occupied = citas.map(c=>c.hora.substring(0,5));
+    } catch(e) { console.error('Error slots:',e); }
+    renderSlots(all, occupied);
+  }
+
+  function generateSlots(start,end,step) {
+    const slots=[]; let [h,m]=start.split(':').map(Number); const [eh,em]=end.split(':').map(Number);
+    while(h<eh||(h===eh&&m<em)){ slots.push(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`); m+=step; if(m>=60){h++;m-=60;} }
+    return slots;
+  }
+
+  function renderSlots(all,occupied) {
+    document.getElementById('slotsGrid').innerHTML=all.map(s=>`
+      <div class="slot ${occupied.includes(s)?'taken':''}" onclick="${occupied.includes(s)?'':``selectSlot('${s}',this)``}">
+        ${s}
+      </div>`).join('');
+  }
+
+  function selectSlot(slot,el) {
+    document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected-slot'));
+    el.classList.add('selected-slot');
+    state.slot=slot;
+    document.getElementById('btnToConfirm').disabled=false;
+  }
+
+  function goToConfirm() {
+    const d=new Date(state.date+'T12:00:00');
+    document.getElementById('sumChair').textContent=`Silla ${state.chair}`;
+    document.getElementById('sumBarber').textContent=state.barber;
+    document.getElementById('sumDate').textContent=d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('sumSlot').textContent=state.slot+' hrs';
+    showSection(4);
+  }
+
+  async function confirmarCita() {
+    const nombre=document.getElementById('clientName').value.trim();
+    if(!nombre){alert('Por favor ingresa tu nombre');return;}
+    const telefono=document.getElementById('clientPhone').value.trim();
+    document.getElementById('btnConfirmar').disabled=true;
+    document.getElementById('btnConfirmar').textContent='Guardando...';
+    try {
+      await sb('citas',{method:'POST',body:{silla_id:state.chair,barbero_id:state.barberId,nombre_cliente:nombre,telefono_cliente:telefono||null,fecha:state.date,hora:state.slot+':00',estado:'confirmada'}});
+      const d=new Date(state.date+'T12:00:00');
+      document.getElementById('okChair').textContent=`Silla ${state.chair}`;
+      document.getElementById('okBarber').textContent=state.barber;
+      document.getElementById('okDate').textContent=d.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      document.getElementById('okSlot').textContent=state.slot+' hrs';
+      document.getElementById('okClient').textContent=nombre+(telefono?` · ${telefono}`:'');
+      showSection(5);
+    } catch(e) {
+      document.getElementById('confirmError').innerHTML=`<div class="error-box">❌ Error al guardar: ${e.message}</div>`;
+      document.getElementById('btnConfirmar').disabled=false;
+      document.getElementById('btnConfirmar').textContent='✅ Confirmar cita';
+    }
+  }
+
+  function showSection(n) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(`sec${n}`).classList.add('active');
+    for(let i=1;i<=4;i++){const el=document.getElementById(`step${i}`);if(!el)continue;el.classList.remove('active','done');if(i<n)el.classList.add('done');else if(i===n)el.classList.add('active');}
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function goBack(to){showSection(to);}
+
+  function resetApp() {
+    state={chair:null,barber:null,barberId:null,date:null,slot:null};
+    document.getElementById('clientName').value='';
+    document.getElementById('clientPhone').value='';
+    document.getElementById('dateInput').value='';
+    document.getElementById('btnToDate').disabled=true;
+    document.getElementById('btnToSlots').disabled=true;
+    document.getElementById('btnToConfirm').disabled=true;
+    document.querySelectorAll('.chair-card').forEach(c=>c.classList.remove('selected'));
+    showSection(1);
+  }
+</script>
+</body>
+</html>
