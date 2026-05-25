@@ -240,32 +240,35 @@
 
   function renderChairs(barberos) {
     const grid = document.getElementById('chairsGrid');
-    if (!barberos.length) {
-      grid.innerHTML = `<div class="error-box" style="max-width:500px">
-        ⚠️ No hay barberos registrados aún. Agrégalos desde el panel admin.<br><br>
-        <strong>¿Ya los agregaste y no aparecen?</strong> Puede ser un problema de permisos en Supabase. Ve a tu proyecto en supabase.com → SQL Editor y ejecuta:<br>
-        <code style="display:block;margin-top:8px;padding:8px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:11px">
-          CREATE POLICY "Lectura pública barberos" ON barberos FOR SELECT TO anon USING (true);<br>
-          CREATE POLICY "Lectura pública citas" ON citas FOR SELECT TO anon USING (true);<br>
-          CREATE POLICY "Insertar citas" ON citas FOR INSERT TO anon WITH CHECK (true);
-        </code>
-      </div>`;
+    if (!barberos || !barberos.length) {
+      grid.innerHTML = '<p style="color:var(--muted);padding:20px 0">No hay barberos registrados. Agrégalos desde el panel admin.</p>';
       return;
     }
-    grid.innerHTML = barberos.map(b => `
-      <div class="chair-card ${b.disponible === false ? 'occupied' : ''}" onclick="${b.disponible === false ? '' : `selectChair(${b.silla_id},'${b.nombre.replace(/'/g,"\\'")}',${b.id},this)`}">
-        <div class="chair-icon">💈</div>
-        <div class="chair-num">SILLA ${b.silla_id}</div>
-        <div class="chair-barber">${b.nombre}</div>
-        <div class="chair-barber" style="color:#555;font-size:12px">${b.especialidad||''}</div>
-        <div class="chair-status ${b.disponible !== false ? 'status-free':'status-busy'}">${b.disponible !== false ? 'Disponible':'No disponible'}</div>
-      </div>`).join('');
+    let html = '';
+    for (let i = 0; i < barberos.length; i++) {
+      const b = barberos[i];
+      const ocupada = b.disponible === false;
+      const nombre = String(b.nombre || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      const especialidad = String(b.especialidad || '').replace(/&/g, '&amp;');
+      const cardClass = ocupada ? 'chair-card occupied' : 'chair-card';
+      const statusClass = ocupada ? 'status-busy' : 'status-free';
+      const statusText = ocupada ? 'No disponible' : 'Disponible';
+      const clickFn = ocupada ? '' : 'selectChair(' + b.silla_id + ',this.dataset.nombre,' + b.id + ',this)';
+      html += '<div class="' + cardClass + '" onclick="' + clickFn + '" data-nombre="' + nombre + '">';
+      html += '<div class="chair-icon">💈</div>';
+      html += '<div class="chair-num">SILLA ' + b.silla_id + '</div>';
+      html += '<div class="chair-barber">' + nombre + '</div>';
+      html += '<div class="chair-barber" style="color:#555;font-size:12px">' + especialidad + '</div>';
+      html += '<div class="chair-status ' + statusClass + '">' + statusText + '</div>';
+      html += '</div>';
+    }
+    grid.innerHTML = html;
   }
 
   function selectChair(sillaId, barberName, barberId, el) {
     document.querySelectorAll('.chair-card').forEach(c=>c.classList.remove('selected'));
     el.classList.add('selected');
-    state.chair=sillaId; state.barber=barberName; state.barberId=barberId;
+    state.chair=sillaId; state.barber=el.dataset.nombre || barberName; state.barberId=barberId;
     document.getElementById('btnToDate').disabled=false;
   }
 
