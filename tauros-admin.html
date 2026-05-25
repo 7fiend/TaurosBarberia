@@ -78,8 +78,8 @@
     <h2>PANEL ADMIN</h2>
     <p>Acceso exclusivo para administradores de Tauros Barbería</p>
     <input type="password" id="pwInput" placeholder="Contraseña" onkeydown="if(event.key==='Enter')login()" />
-    <button class="btn btn-gold" onclick="login()">Ingresar</button>
-    <p style="margin-top:16px;font-size:12px;color:#555">Contraseña por defecto: <strong style="color:var(--gold)">tauros2024</strong></p>
+    <div id="loginError" style="min-height:20px;margin-bottom:8px;font-size:13px;color:var(--red);"></div>
+    <button class="btn btn-gold" id="btnLogin" onclick="login()">Ingresar</button>
   </div>
 </div>
 <div id="appWrap">
@@ -95,6 +95,7 @@
     <div class="tab active" onclick="showTab('dashboard',this)">📊 Dashboard</div>
     <div class="tab" onclick="showTab('citas',this)">📅 Citas</div>
     <div class="tab" onclick="showTab('barberos',this)">💈 Barberos</div>
+    <div class="tab" onclick="showTab('settings',this)">⚙️ Ajustes</div>
   </div>
   <div class="content">
 
@@ -122,7 +123,7 @@
           <option value="cancelada">Cancelada</option>
         </select>
       </div>
-      <div class="table-wrap" id="citasTable"><div class="empty-state"><div class="empty-icon">📋</div><p>Usa los filtros para ver citas</p></div></div>
+      <div class="table-wrap" id="citasTable"><div class="empty-state"><div class="empty-icon">📋</div><p>Cargando citas...</p></div></div>
     </div>
 
     <!-- BARBEROS -->
@@ -141,12 +142,68 @@
       <div class="table-wrap" id="barberosTable"><div class="empty-state"><div class="empty-icon">💈</div><p>No hay barberos aún</p></div></div>
     </div>
 
+    <!-- AJUSTES -->
+    <div class="panel" id="panel-settings">
+      <div class="form-card">
+        <h3>🔑 CAMBIAR CONTRASEÑA</h3>
+        <div class="field"><label>Contraseña actual</label><input type="password" id="pwActual" placeholder="••••••••" /></div>
+        <div class="field"><label>Nueva contraseña</label><input type="password" id="pwNueva" placeholder="Mínimo 8 caracteres" /></div>
+        <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="pwConfirm" placeholder="Repite la nueva contraseña" /></div>
+        <div id="pwChangeMsg" style="min-height:20px;margin-bottom:12px;font-size:13px;"></div>
+        <button class="btn btn-gold" onclick="cambiarPassword()">Actualizar contraseña</button>
+      </div>
+      <div class="form-card">
+        <h3>ℹ️ INFORMACIÓN</h3>
+        <p style="color:var(--muted);font-size:13px;line-height:1.8">
+          Las contraseñas se almacenan de forma segura usando SHA-256.<br>
+          La sesión expira automáticamente tras 2 horas de inactividad.<br>
+          Si olvidas tu contraseña, contacta al soporte técnico.
+        </p>
+      </div>
+    </div>
+
   </div>
 </div>
 <script>
   const SUPABASE_URL = 'https://wfpsicmmvvtppxewqgct.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmcHNpY21tdnZ0cHB4ZXdxZ2N0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0NTUwMTUsImV4cCI6MjA5NDAzMTAxNX0.nSZ-qZJhPJmSLEk3rU4JNIzY8ie9HxZcl77gBwk7kx8';
-  let ADMIN_PW = localStorage.getItem('tb_admin_pw') || 'tauros2024';
+
+  // ── Auth: SHA-256 hashing, no plaintext passwords ──
+  const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 horas
+  let _sessionTimer = null;
+  let _loginAttempts = 0;
+  const MAX_ATTEMPTS = 5;
+
+  async function hashPassword(pw) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  async function initAuth() {
+    // Migrar desde almacenamiento antiguo en texto plano si existe
+    const oldPw = localStorage.getItem('tb_admin_pw');
+    if (oldPw && !localStorage.getItem('tb_admin_pw_hash')) {
+      localStorage.setItem('tb_admin_pw_hash', await hashPassword(oldPw));
+      localStorage.removeItem('tb_admin_pw');
+    }
+    // Si no hay hash guardado, configurar el hash de la contraseña por defecto
+    if (!localStorage.getItem('tb_admin_pw_hash')) {
+      // Contraseña inicial: tauros2024
+      localStorage.setItem('tb_admin_pw_hash', await hashPassword('tauros2024'));
+    }
+  }
+
+  function resetSessionTimer() {
+    clearTimeout(_sessionTimer);
+    _sessionTimer = setTimeout(() => {
+      if (document.getElementById('appWrap').style.display !== 'none') {
+        logout();
+        alert('Sesión expirada por inactividad. Por favor inicia sesión de nuevo.');
+      }
+    }, SESSION_TIMEOUT_MS);
+  }
+
+  initAuth();
 
   async function sb(path, opts={}) {
     const controller = new AbortController();
@@ -169,24 +226,80 @@
     }
   }
 
-  function login() {
-    if(document.getElementById('pwInput').value===ADMIN_PW){
-      document.getElementById('loginWrap').style.display='none';
-      document.getElementById('appWrap').style.display='flex';
-      loadDashboard(); loadBarberos(); loadBarberosFilter();
-    } else {
-      document.getElementById('pwInput').style.borderColor='var(--red)';
-      setTimeout(()=>document.getElementById('pwInput').style.borderColor='',1500);
+  async function login() {
+    if (_loginAttempts >= MAX_ATTEMPTS) {
+      document.getElementById('loginError').textContent = '🔒 Demasiados intentos fallidos. Recarga la página para intentar de nuevo.';
+      return;
+    }
+    const btnLogin = document.getElementById('btnLogin');
+    btnLogin.disabled = true;
+    btnLogin.textContent = 'Verificando...';
+    const entered = document.getElementById('pwInput').value;
+    try {
+      const enteredHash = await hashPassword(entered);
+      const storedHash = localStorage.getItem('tb_admin_pw_hash');
+      if (enteredHash === storedHash) {
+        _loginAttempts = 0;
+        document.getElementById('loginWrap').style.display='none';
+        document.getElementById('appWrap').style.display='flex';
+        document.getElementById('loginError').textContent = '';
+        resetSessionTimer();
+        document.addEventListener('click', resetSessionTimer);
+        document.addEventListener('keydown', resetSessionTimer);
+        loadDashboard(); loadBarberos(); loadBarberosFilter(); loadCitas();
+      } else {
+        _loginAttempts++;
+        const restantes = MAX_ATTEMPTS - _loginAttempts;
+        document.getElementById('loginError').textContent = restantes > 0
+          ? `Contraseña incorrecta. ${restantes} intento${restantes!==1?'s':''} restante${restantes!==1?'s':''}.`
+          : '🔒 Cuenta bloqueada. Recarga la página para intentar de nuevo.';
+        document.getElementById('pwInput').style.borderColor='var(--red)';
+        setTimeout(()=>document.getElementById('pwInput').style.borderColor='',1500);
+      }
+    } finally {
+      btnLogin.disabled = false;
+      btnLogin.textContent = 'Ingresar';
     }
   }
 
-  function logout(){document.getElementById('loginWrap').style.display='flex';document.getElementById('appWrap').style.display='none';document.getElementById('pwInput').value='';}
+  function logout() {
+    clearTimeout(_sessionTimer);
+    document.removeEventListener('click', resetSessionTimer);
+    document.removeEventListener('keydown', resetSessionTimer);
+    document.getElementById('loginWrap').style.display='flex';
+    document.getElementById('appWrap').style.display='none';
+    document.getElementById('pwInput').value='';
+    document.getElementById('loginError').textContent='';
+    _loginAttempts = 0;
+  }
+
+  async function cambiarPassword() {
+    const actual = document.getElementById('pwActual').value;
+    const nueva = document.getElementById('pwNueva').value;
+    const confirmar = document.getElementById('pwConfirm').value;
+    const msgEl = document.getElementById('pwChangeMsg');
+    msgEl.style.color = 'var(--red)';
+    if (!actual || !nueva || !confirmar) { msgEl.textContent = '⚠️ Completa todos los campos.'; return; }
+    if (nueva.length < 8) { msgEl.textContent = '⚠️ La nueva contraseña debe tener al menos 8 caracteres.'; return; }
+    if (nueva !== confirmar) { msgEl.textContent = '⚠️ Las contraseñas nuevas no coinciden.'; return; }
+    const actualHash = await hashPassword(actual);
+    const storedHash = localStorage.getItem('tb_admin_pw_hash');
+    if (actualHash !== storedHash) { msgEl.textContent = '❌ La contraseña actual es incorrecta.'; return; }
+    localStorage.setItem('tb_admin_pw_hash', await hashPassword(nueva));
+    document.getElementById('pwActual').value='';
+    document.getElementById('pwNueva').value='';
+    document.getElementById('pwConfirm').value='';
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = '✅ Contraseña actualizada correctamente.';
+    setTimeout(()=>msgEl.textContent='',4000);
+  }
 
   function showTab(name,el) {
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.getElementById(`panel-${name}`).classList.add('active');
     el.classList.add('active');
+    if (name === 'citas') loadCitas();
   }
 
   async function loadDashboard() {

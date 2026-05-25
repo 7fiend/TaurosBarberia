@@ -122,10 +122,11 @@
   <div class="section" id="sec2">
     <div class="selected-chip">✂️ <span id="chipChair"></span></div>
     <div class="section-title">ELIGE LA FECHA</div>
-    <div class="section-sub">Solo días de lunes a sábado dentro del horario de operación.</div>
+    <div class="section-sub">Solo días de lunes a sábado · Horario: 9:00 am – 6:00 pm</div>
     <div class="date-picker-wrap">
       <label>Selecciona un día</label>
       <input type="date" id="dateInput" onchange="onDateChange()" />
+      <div id="dateMsg" style="margin-top:12px;font-size:13px;"></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-outline" onclick="goBack(1)">← Volver</button>
@@ -158,7 +159,7 @@
     </div>
     <div style="margin-top:28px;max-width:420px;">
       <div class="field-group"><label class="field-label">Tu nombre</label><input type="text" id="clientName" placeholder="Ej: Juan Pérez" /></div>
-      <div class="field-group"><label class="field-label">Teléfono (opcional)</label><input type="tel" id="clientPhone" placeholder="Ej: 300 123 4567" /></div>
+      <div class="field-group"><label class="field-label">Teléfono <span style="color:var(--red)">*</span></label><input type="tel" id="clientPhone" placeholder="Ej: 300 123 4567" /></div>
     </div>
     <div id="confirmError"></div>
     <div class="btn-row">
@@ -218,6 +219,10 @@
   window.onload = async () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('dateInput').min = today;
+    document.getElementById('dateInput').max = (() => {
+      const d = new Date(); d.setMonth(d.getMonth() + 3);
+      return d.toISOString().split('T')[0];
+    })();
     loadChairs();
   };
 
@@ -279,10 +284,27 @@
 
   function onDateChange() {
     const val = document.getElementById('dateInput').value;
-    const day = new Date(val+'T12:00:00').getDay();
-    if (day===0) { alert('La barbería está cerrada los domingos.'); document.getElementById('dateInput').value=''; document.getElementById('btnToSlots').disabled=true; return; }
-    state.date=val;
-    document.getElementById('btnToSlots').disabled=false;
+    const msgEl = document.getElementById('dateMsg');
+    document.getElementById('btnToSlots').disabled = true;
+    msgEl.innerHTML = '';
+    if (!val) return;
+
+    const selected = new Date(val + 'T12:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (selected < today) {
+      msgEl.innerHTML = '<span style="color:var(--red)">⛔ No puedes agendar para una fecha que ya pasó.</span>';
+      document.getElementById('dateInput').value = '';
+      return;
+    }
+    const day = selected.getDay();
+    if (day === 0) {
+      msgEl.innerHTML = '<span style="color:var(--red)">🔴 La barbería está cerrada los domingos. Por favor elige otro día.</span>';
+      document.getElementById('dateInput').value = '';
+      return;
+    }
+    msgEl.innerHTML = '<span style="color:var(--green)">✅ Día disponible — Horario: 9:00 am a 6:00 pm</span>';
+    state.date = val;
+    document.getElementById('btnToSlots').disabled = false;
   }
 
   async function goToSlots() {
@@ -336,8 +358,15 @@
 
   async function confirmarCita() {
     const nombre=document.getElementById('clientName').value.trim();
-    if(!nombre){alert('Por favor ingresa tu nombre');return;}
+    if(!nombre){document.getElementById('confirmError').innerHTML='<div class="error-box">⚠️ Por favor ingresa tu nombre.</div>';return;}
     const telefono=document.getElementById('clientPhone').value.trim();
+    if(!telefono){document.getElementById('confirmError').innerHTML='<div class="error-box">⚠️ El teléfono es obligatorio — es nuestro método de contacto.</div>';return;}
+    // Validación de seguridad: verificar que la fecha no sea pasada ni domingo
+    const today = new Date(); today.setHours(0,0,0,0);
+    const citaDate = new Date(state.date + 'T12:00:00');
+    if (citaDate < today) { document.getElementById('confirmError').innerHTML='<div class="error-box">⛔ No se pueden agendar citas para fechas pasadas.</div>'; return; }
+    if (citaDate.getDay() === 0) { document.getElementById('confirmError').innerHTML='<div class="error-box">🔴 Los domingos no hay servicio. Por favor elige otro día.</div>'; return; }
+    document.getElementById('confirmError').innerHTML='';
     document.getElementById('btnConfirmar').disabled=true;
     document.getElementById('btnConfirmar').textContent='Guardando...';
     try {
